@@ -16,6 +16,7 @@ using namespace std;
 ServerSocket s;
 bool running = false;
 int numServices;
+int numQueues;
 string currentCommand;
 
 list<thread> serviceThreads;
@@ -123,45 +124,69 @@ void manageTraffic() {
   }
 }
 
+bool validUserData(list<string> params) {
+  bool valid = true;
+
+  string strServices = params.front();
+  params.pop_front();
+  string strQueues = params.front();
+
+  if (!Validator::isNumber(strServices)) {
+      cout << Message::newlineMessage(Message::errorFormat("Number of services", "anything other than numbers"));
+      valid = false;;
+
+  }else if (!Validator::isNumber(strQueues)) {
+      cout << Message::newlineMessage(Message::errorFormat("Number of queues", "anything other than numbers"));
+      valid = false;
+  } else {
+    numServices = atoi(strServices.c_str());
+    numQueues = atoi(strQueues.c_str());
+
+    if (numServices == 0) {
+      cout << Message::newlineMessage(Message::errorFormat("Number of services", " only 0"));
+        valid = false;
+    } else if (numQueues == 0) {
+      cout << Message::newlineMessage(Message::errorFormat("Number of queues", "only 0"));
+        valid = false;
+    }
+  } 
+    return valid;
+}
+
 void attendQueues() {
 
 }
 
 int main(int argc, char **argv) {
-  if (argc == 2) {
+  if (argc == 3) {
     string strServices = string(argv[1]);
-    if (Validator::isNumber(strServices)) {
-      numServices = atoi(strServices.c_str());
-      if (numServices == 0) {
-        cout << Message::errorFormat("Number of services", "0");
-        return 0;
-      } else {
-        if (s.Connect()) {
-          running = true;
-          cout << Message::newlineMessage("Server is up and running");
+    string strQueues = string(argv[2]);
+    list<string> input;
+    input.push_back(strServices);
+    input.push_back(strQueues);
 
-          for (int i  = 0; i < numServices; i++) {
-            serviceThreads.push_back(thread(attendQueues));
+    if (validUserData(input)) {
+      if (s.Connect()) {
+        running = true;
+        cout << Message::newlineMessage("Server is up and running");
+
+        thread trafficManager (manageTraffic);
+
+        while (running) {
+          currentCommand.clear();
+          getline(cin, currentCommand);
+          if (currentCommand.compare("e") == 0) {
+            running = false;
           }
-
-          thread trafficManager (manageTraffic);
-
-          while (running) {
-            currentCommand.clear();
-            getline(cin, currentCommand);
-            if (currentCommand.compare("e") == 0) {
-              running = false;
-            }
-          }
-          cout << Message::newlineMessage("Waiting for server manager to end...");
-          trafficManager.join();
-          s.Close();
-
         }
+
+        cout << Message::newlineMessage("Waiting for server manager to end...");
+        trafficManager.join();
+        s.Close();
       }
     }
   } else {
-    cout << Message::newlineMessage("Must only specify number of services as parameter");
+    cout << Message::newlineMessage("Whoops, you have to spcecify only the number of services and number of queues");
   }
   return 0;
 }
