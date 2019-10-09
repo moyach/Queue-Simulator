@@ -1,13 +1,15 @@
 
 #include <iostream>
-#include "serverSocket.h"
-#include "validator.h"
-#include "message.h"
 #include <string.h>
 #include <thread>
 
 #include <list>
 #include <queue>
+
+#include "object.h"
+#include "serverSocket.h"
+#include "validator.h"
+#include "message.h"
 
 using namespace std;
 
@@ -20,6 +22,10 @@ int numQueues;
 string currentCommand;
 
 list<thread> serviceThreads;
+
+list<queue<Object> > listQueues;
+
+int* queueSizes;
 
 
 
@@ -110,6 +116,43 @@ list<thread> serviceThreads;
 //   return 0;
 // }
 
+int determineQueueNumber() {
+  //check if there is a queue with the least amount
+  int index = -1;
+  int aux = -1;
+  int amount = -1;
+
+
+  list<queue<Object> > ::iterator it;
+  for (it = listQueues.begin(); it != listQueues.end(); ++it) {
+    aux++;
+    
+    queue<Object> currentQueue = (queue<Object>)* (it);
+    if (amount == -1) {
+      amount = currentQueue.size();
+      index = aux;
+
+    } else if (amount != -1 && currentQueue.size() < amount) {
+      amount = currentQueue.size();
+      index = aux;
+    }
+  }
+  return index;
+}
+
+void insertIntoQueue(int queueNumber, Object o) {
+  
+  list<queue<Object> > ::iterator it;
+  int index = -1;
+  for (it = listQueues.begin(); it != listQueues.end(); ++it) {
+    index++;
+    if (index == queueNumber) {
+      //then assign
+      it->push(o);
+    }
+  }
+}
+
 void manageTraffic() {
   string data;
   while (running) {
@@ -117,10 +160,20 @@ void manageTraffic() {
     if (data.length() > 0) {
       if (data[0] == 'O') {
         data.erase(0, 1);
-        cout << "I have execution of: " << data << endl;
+        time_t current;
+        time(&current);
+
+        int execTime = atoi(data.c_str());
+
+        cout << ctime(&current);
+
+        int queueNumber = determineQueueNumber();
+        Object obj(execTime, queueNumber);
+        insertIntoQueue(queueNumber, obj);
+        cout << "Adding object to line number: " << queueNumber << endl;
+        
       }
     }
-    
   }
 }
 
@@ -153,8 +206,12 @@ bool validUserData(list<string> params) {
     return valid;
 }
 
-void attendQueues() {
-
+void setUpQueues(int numQueues) {
+  do {
+    queue<Object> newQueue;
+    listQueues.push_back(newQueue);
+    numQueues--;
+  } while (numQueues > 0);
 }
 
 int main(int argc, char **argv) {
@@ -171,6 +228,7 @@ int main(int argc, char **argv) {
         cout << Message::newlineMessage("Server is up and running");
 
         thread trafficManager (manageTraffic);
+        setUpQueues(numQueues);
 
         while (running) {
           currentCommand.clear();
