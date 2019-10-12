@@ -3,6 +3,7 @@
 
 const std::string Message::invalidOption = "Whoops, it seems that is an invalid option.";
 
+
 std::string Message::errorEmpty(std::string input) {
     return "Whoops, " + input + " cannot be empty";
 }

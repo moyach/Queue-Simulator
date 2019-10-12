@@ -13,8 +13,7 @@ ClientSocket c;
 void showClientMenuOptions() {
   cout << Message::newlineMessage("=====Client Menu=====");
   cout << Message::newlineMessage("1. Generate random objects");
-  cout << Message::newlineMessage("2. Generate objects from file");
-  cout << Message::newlineMessage("3. Exit");
+  cout << Message::newlineMessage("2. Exit");
 
   std::string option;
   cout << Message::inlineMessage("Enter the option number:");
@@ -34,17 +33,8 @@ void handleOption(std::string option) {
     } else {
       showClientMenuOptions();
     }
-  
+
   } else if (option.compare("2") == 0 && !running) {
-    list<string> input = askInputForFileReading();
-    if (validInput(input)) {
-      //readFile(input)
-
-    } else {
-      showClientMenuOptions();
-    }
-
-  } else if (option.compare("3") == 0 && !running) {
     return;
 
   } else if (option.compare("e") == 0 && running) {

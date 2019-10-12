@@ -4,6 +4,8 @@ class Message {
     public:
         static const std::string invalidOption;
 
+        static const std::string noObjectFound;
+
 
         static std::string errorEmpty(std::string input);
 

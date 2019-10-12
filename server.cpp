@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string.h>
 #include <thread>
+#include <mutex>
 
 #include <list>
 #include <queue>
@@ -10,6 +11,7 @@
 #include "serverSocket.h"
 #include "validator.h"
 #include "message.h"
+#include "service.h"
 
 using namespace std;
 
@@ -17,16 +19,16 @@ using namespace std;
 
 ServerSocket s;
 bool running = false;
+bool report = true;
 int numServices;
 int numQueues;
 string currentCommand;
 
-list<thread> serviceThreads;
+vector<thread> serviceThreads;
 
 list<queue<Object> > listQueues;
 
-int* queueSizes;
-
+mutex m;
 
 
 
@@ -165,12 +167,10 @@ void manageTraffic() {
 
         int execTime = atoi(data.c_str());
 
-        cout << ctime(&current);
-
         int queueNumber = determineQueueNumber();
         Object obj(execTime, queueNumber);
         insertIntoQueue(queueNumber, obj);
-        cout << "Adding object to line number: " << queueNumber << endl;
+        cout << "Adding object with execution of: " << execTime << " to line number: " << queueNumber << endl;
         
       }
     }
@@ -214,6 +214,109 @@ void setUpQueues(int numQueues) {
   } while (numQueues > 0);
 }
 
+Object getQueueObjectAt(int index) {
+  list<queue<Object> > ::iterator it;
+  int currentIndex = 0;
+  for (it = listQueues.begin(); it != listQueues.end(); ++it) {
+    if (currentIndex == index) {
+      queue<Object> currentQueue = (queue<Object>)* (it);
+      if (currentQueue.size() == 0) {
+        return Object(-1, -1);
+      } else {
+        Object o = currentQueue.front();
+        currentQueue.pop();
+        return o;
+      }
+    } else {
+      currentIndex++;
+
+    }
+  }
+  //return an empty object
+  return Object(-1, -1);
+}
+
+void attendQueue(const int serviceNumber) {
+  Service s(serviceNumber);
+
+  bool randomQueue = false;
+  int index;
+  
+  list<queue<Object> > ::iterator it;
+
+  string message = "Service number: ";
+  message += to_string(serviceNumber);
+  message += " is up for service";
+
+  m.lock();
+  
+  cout << Message::newlineMessage(message);
+  m.unlock();
+  
+  if (numServices != numQueues) {
+    randomQueue = true;
+  } else {
+    index = serviceNumber;
+  }
+
+  while (running) {
+    if (randomQueue) {
+      index = rand() % numQueues;
+    }
+
+    if (currentCommand.compare("r") == 0) {
+      cout << s.ToString();
+    }
+
+    sleep(1);
+    Object o = getQueueObjectAt(index);
+
+    if (o.getQueueNumber() != -1) {
+      //it is a valid object from queue
+      message.clear();
+      message += to_string(serviceNumber);
+      message += " is recieving object from queue number: ";
+      message += to_string(index);
+
+      m.lock();
+      cout << Message::newlineMessage(message);
+      m.unlock();
+
+      //o.setAttentTime();
+      int executionTime = o.getExecution();
+      sleep(executionTime);
+      s.finishAttention(executionTime);
+
+      cout << "Client at: " << serviceNumber << " has finished its time at the service" << endl;
+      //showStats of object leaving
+    }
+  }
+  cout << s.ToString();
+}
+
+void setUpServices(int numServices) {
+  for (int i = 0; i < numServices; i++) {
+    serviceThreads.push_back(thread(attendQueue, i));
+  }
+}
+
+void showQueues() {
+  cout << Message::newlineMessage("Queue#\t|\t Time of arrival \t\t|\t ExecTime \t|\t WaitingTime");
+  list<queue<Object> > ::iterator it;
+  for (it = listQueues.begin(); it != listQueues.end(); ++it) {
+    queue<Object> temp = (queue<Object>)* (it);
+    int size = temp.size();
+    for (int i = 0; i < size; i++) {
+      Object o = temp.front();
+      temp.pop();
+      cout << o.ToString();
+      temp.push(o);
+    }
+  }
+}
+
+
+
 int main(int argc, char **argv) {
   if (argc == 3) {
     string strServices = string(argv[1]);
@@ -229,18 +332,29 @@ int main(int argc, char **argv) {
 
         thread trafficManager (manageTraffic);
         setUpQueues(numQueues);
+        setUpServices(numServices);
 
         while (running) {
-          currentCommand.clear();
+          //currentCommand.clear();
           getline(cin, currentCommand);
           if (currentCommand.compare("e") == 0) {
             running = false;
+          } else if (currentCommand.compare("q") == 0) {
+            showQueues();
           }
         }
 
+      //close manager listener thread
         cout << Message::newlineMessage("Waiting for server manager to end...");
+        cout << Message::newlineMessage("ID\t|\t #ObjsAttended \t\t|\t TotalExecution \t|\t AVGTime/Obj");
         trafficManager.join();
         s.Close();
+
+        //close service threads
+        for (int i = 0; i < numServices; i++) {
+          serviceThreads[i].join();
+        }
+
       }
     }
   } else {
