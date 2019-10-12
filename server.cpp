@@ -3,6 +3,7 @@
 #include <string.h>
 #include <thread>
 #include <mutex>
+#include <stdlib.h>
 
 #include <list>
 #include <queue>
@@ -23,6 +24,8 @@ bool report = true;
 int numServices;
 int numQueues;
 string currentCommand;
+
+string finalTable = "";
 
 vector<thread> serviceThreads;
 
@@ -275,7 +278,7 @@ void attendQueue(const int serviceNumber) {
       //it is a valid object from queue
       message.clear();
       message += to_string(serviceNumber);
-      message += " is recieving object from queue number: ";
+      message += " is rtrying to recieve an object from queue number: ";
       message += to_string(index);
 
       m.lock();
@@ -291,7 +294,8 @@ void attendQueue(const int serviceNumber) {
       //showStats of object leaving
     }
   }
-  cout << s.ToString();
+  finalTable = finalTable + s.ToString();
+  //cout << s.ToString();
 }
 
 void setUpServices(int numServices) {
@@ -346,7 +350,7 @@ int main(int argc, char **argv) {
 
       //close manager listener thread
         cout << Message::newlineMessage("Waiting for server manager to end...");
-        cout << Message::newlineMessage("ID\t|\t #ObjsAttended \t\t|\t TotalExecution \t|\t AVGTime/Obj");
+        
         trafficManager.join();
         s.Close();
 
@@ -355,6 +359,9 @@ int main(int argc, char **argv) {
           serviceThreads[i].join();
         }
 
+        system("clear");
+        cout << Message::newlineMessage("ID\t|\t #ObjsAttended \t\t|\t TotalExecution \t|\t AVGTime/Obj");
+        cout << finalTable;
       }
     }
   } else {

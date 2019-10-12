@@ -6,7 +6,6 @@ class Message {
 
         static const std::string noObjectFound;
 
-
         static std::string errorEmpty(std::string input);
 
         static std::string errorFormat(std::string input, std::string format);

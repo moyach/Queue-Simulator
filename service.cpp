@@ -14,9 +14,9 @@ void Service::finishAttention(int execution) {
 
 std::string Service::ToString() {
     std::string s;
-    s += std::to_string(ID) + "\t|\t";
-    s += std::to_string(numClientsAttended) + "\t|\t";
-    s += std::to_string(totalExecutions) + "\t|\t";
+    s += std::to_string(ID) + "\t|\t\t";
+    s += std::to_string(numClientsAttended) + "\t\t|\t\t";
+    s += std::to_string(totalExecutions) + "\t\t|\t";
 
     time_t current;
     time(&current);
