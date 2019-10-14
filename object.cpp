@@ -37,6 +37,5 @@ std::string Object::ToString() {
     time(&current);
     double waitingTime = difftime(current, arrival);
     s += std::to_string(waitingTime);
-    s += "\n";
     return s;
 }

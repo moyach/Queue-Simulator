@@ -26,6 +26,7 @@ int numQueues;
 string currentCommand;
 
 string finalTable = "";
+int currentFinalTableRowNumber =0;
 
 vector<thread> serviceThreads;
 
@@ -313,7 +314,7 @@ void showQueues() {
       Object o = temp.front();
       temp.pop();
       if (index %2 == 0) {
-        cout << o.ToString();
+        cout << o.ToString() << Message::normal;
       } else {
         cout << Message::yellow << o.ToString() << Message::normal;
       }
