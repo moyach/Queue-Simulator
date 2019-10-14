@@ -222,17 +222,16 @@ Object getQueueObjectAt(int index) {
   int currentIndex = 0;
   for (it = listQueues.begin(); it != listQueues.end(); ++it) {
     if (currentIndex == index) {
-      queue<Object> currentQueue = (queue<Object>)* (it);
-      if (currentQueue.size() == 0) {
+      //use current queue
+      if (it->size() == 0) {
         return Object(-1, -1);
       } else {
-        Object o = currentQueue.front();
-        currentQueue.pop();
+        Object o = it->front();
+        it->pop();
         return o;
       }
     } else {
       currentIndex++;
-
     }
   }
   //return an empty object
