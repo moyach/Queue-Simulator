@@ -3,6 +3,15 @@
 
 const std::string Message::invalidOption = "Whoops, it seems that is an invalid option.";
 
+const std::string Message::red = "\033[1;31m";
+
+const std::string Message::normal = "\033[0m\n";
+
+const std::string Message::green = "\033[32m";
+
+const std::string Message::yellow = "\033[93m";
+
+
 
 std::string Message::errorEmpty(std::string input) {
     return "Whoops, " + input + " cannot be empty";
@@ -29,5 +38,5 @@ std::string Message::newlineMessage(std::string message) {
 }
 
 std::string Message::error(std::string input) {
-  return "Whoops, " + input + "\n";
+  return "Whoops, " + input;
 }

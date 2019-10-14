@@ -16,7 +16,6 @@ class Service {
         Service(int pId);
         void finishAttention(int execution);
         std::string ToString();
+        int getId();
 };
-
-
 #endif

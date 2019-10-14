@@ -188,21 +188,21 @@ bool validUserData(list<string> params) {
   string strQueues = params.front();
 
   if (!Validator::isNumber(strServices)) {
-      cout << Message::newlineMessage(Message::errorFormat("Number of services", "anything other than numbers"));
+      cout << Message::red << Message::newlineMessage(Message::errorFormat("Number of services", "anything other than numbers")) << Message::normal;
       valid = false;;
 
   }else if (!Validator::isNumber(strQueues)) {
-      cout << Message::newlineMessage(Message::errorFormat("Number of queues", "anything other than numbers"));
+      cout << Message::red << Message::newlineMessage(Message::errorFormat("Number of queues", "anything other than numbers")) << Message::normal;
       valid = false;
   } else {
     numServices = atoi(strServices.c_str());
     numQueues = atoi(strQueues.c_str());
 
     if (numServices == 0) {
-      cout << Message::newlineMessage(Message::errorFormat("Number of services", " only 0"));
+      cout << Message::red << Message::newlineMessage(Message::errorFormat("Number of services", " only 0")) << Message::normal;
         valid = false;
     } else if (numQueues == 0) {
-      cout << Message::newlineMessage(Message::errorFormat("Number of queues", "only 0"));
+      cout << Message::red << Message::newlineMessage(Message::errorFormat("Number of queues", "only 0")) << Message::normal;
         valid = false;
     }
   } 
@@ -251,8 +251,7 @@ void attendQueue(const int serviceNumber) {
   message += " is up for service";
 
   m.lock();
-  
-  cout << Message::newlineMessage(message);
+  cout << Message::green << Message::inlineMessage(message) << Message::normal;
   m.unlock();
   
   if (numServices != numQueues) {
@@ -277,24 +276,23 @@ void attendQueue(const int serviceNumber) {
       //it is a valid object from queue
       message.clear();
       message += to_string(serviceNumber);
-      message += " is rtrying to recieve an object from queue number: ";
+      message += " is recieving an object from queue number: ";
       message += to_string(index);
 
       m.lock();
       cout << Message::newlineMessage(message);
       m.unlock();
 
-      //o.setAttentTime();
+      o.setAttentTime();
       int executionTime = o.getExecution();
       sleep(executionTime);
       s.finishAttention(executionTime);
 
-      cout << "Client at: " << serviceNumber << " has finished its time at the service" << endl;
+      cout << Message::green << "Client at: " << serviceNumber << " with execution of: " << executionTime << " has finished its time at the service" << Message::normal;
       //showStats of object leaving
     }
   }
   finalTable = finalTable + s.ToString();
-  //cout << s.ToString();
 }
 
 void setUpServices(int numServices) {
@@ -304,7 +302,9 @@ void setUpServices(int numServices) {
 }
 
 void showQueues() {
-  cout << Message::newlineMessage("Queue#\t|\t Time of arrival \t\t|\t ExecTime \t|\t WaitingTime");
+  int index = 0;
+
+  cout << Message::yellow << Message::inlineMessage("Queue#\t|\t Time of arrival \t\t|\t ExecTime \t|\t WaitingTime") << Message::normal;
   list<queue<Object> > ::iterator it;
   for (it = listQueues.begin(); it != listQueues.end(); ++it) {
     queue<Object> temp = (queue<Object>)* (it);
@@ -312,7 +312,12 @@ void showQueues() {
     for (int i = 0; i < size; i++) {
       Object o = temp.front();
       temp.pop();
-      cout << o.ToString();
+      if (index %2 == 0) {
+        cout << o.ToString();
+      } else {
+        cout << Message::yellow << o.ToString() << Message::normal;
+      }
+      index++;
       temp.push(o);
     }
   }
@@ -321,6 +326,7 @@ void showQueues() {
 
 
 int main(int argc, char **argv) {
+
   if (argc == 3) {
     string strServices = string(argv[1]);
     string strQueues = string(argv[2]);
@@ -331,7 +337,7 @@ int main(int argc, char **argv) {
     if (validUserData(input)) {
       if (s.Connect()) {
         running = true;
-        cout << Message::newlineMessage("Server is up and running");
+        cout << Message::green << Message::newlineMessage("Server is up and running") << Message::normal;
 
         thread trafficManager (manageTraffic);
         setUpQueues(numQueues);
@@ -359,12 +365,12 @@ int main(int argc, char **argv) {
         }
 
         system("clear");
-        cout << Message::newlineMessage("ID\t|\t #ObjsAttended \t\t|\t TotalExecution \t|\t AVGTime/Obj");
+        cout << Message::yellow << Message::newlineMessage("ID\t|\t #ObjsAttended \t\t|\t TotalExecution \t|\t AVGTime/Obj") << Message::normal;
         cout << finalTable;
       }
     }
   } else {
-    cout << Message::newlineMessage("Whoops, you have to spcecify only the number of services and number of queues");
+    cout << Message::red << Message::inlineMessage("Whoops, you have to spcecify only the number of services and number of queues") << Message::normal;
   }
   return 0;
 }

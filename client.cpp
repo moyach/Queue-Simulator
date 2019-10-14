@@ -42,7 +42,7 @@ void handleOption(std::string option) {
     running = false;
 
   } else if (!running){
-      cout << Message::newlineMessage(Message::invalidOption);
+      cout << Message::red << Message::inlineMessage(Message::invalidOption) << Message::normal;
       showClientMenuOptions();
   }
 }
@@ -84,7 +84,7 @@ bool validInput(list<string> input) {
     //it is a fileName
     string fileName = input.front();
     if (fileName.compare("") == 0) {
-      cout << Message::errorEmpty("Filename");
+      cout << Message::red << Message::errorEmpty("Filename") << Message::normal;
       valid = false;
     } else {
       return true;
@@ -99,24 +99,24 @@ bool validInput(list<string> input) {
     string creationRate = input.front();
 
     if (minExc.compare("") == 0 || maxExc.compare("") == 0 || creationRate.compare("") == 0) {
-      cout << Message::errorEmpty("no input");
+      cout << Message::red << Message::errorEmpty("no input") << Message::normal;
       valid = false;
     } else if (!Validator::isNumber(minExc) || !Validator::isNumber(maxExc) || !Validator::isNumber(creationRate)) {
-      cout << Message::errorFormat("no input", "anything other than numbers");
+      cout << Message::red << Message::errorFormat("no input", "anything other than numbers") << Message::normal;
       valid = false;
     } else {
       int minExcInt = atoi(minExc.c_str());
       int maxExcInt = atoi(maxExc.c_str());
       int creationRateInt = atoi(creationRate.c_str());
       if (minExcInt > maxExcInt) {
-        cout << Message::error("minimum cannot be greater than maximum");
+        cout << Message::red << Message::error("minimum cannot be greater than maximum") << Message::normal;
         valid = false;
 
       } else if (maxExcInt == 0) {
-        cout << Message::errorFormat("maximum execution rate", "only 0");
+        cout << Message::red << Message::errorFormat("maximum execution rate", "only 0") << Message::normal;
         valid = false;
       } else if (minExcInt == 0) {
-        cout << Message::errorFormat("minimum execution rate", "only 0");
+        cout << Message::red << Message::errorFormat("minimum execution rate", "only 0") << Message::normal;
       }
     }
   } else {
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
 
   if (c.StartConnection()) {
 
-    cout << Message::newlineMessage("Connected successfully to server");
+    cout << Message::green << Message::newlineMessage("Connected successfully to server") << Message::normal;
     showClientMenuOptions();
 
     if (operationMode == 0) {

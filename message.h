@@ -1,10 +1,16 @@
 #include<string>
 
+
 class Message {
     public:
         static const std::string invalidOption;
 
         static const std::string noObjectFound;
+
+        static const std::string red;
+        static const std::string normal;
+        static const std::string green;
+        static const std::string yellow;
 
         static std::string errorEmpty(std::string input);
 

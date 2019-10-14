@@ -30,6 +30,8 @@ std::string Service::ToString() {
     s += "\n";
 
     return s;
+}
 
-
+int Service::getId() {
+    return ID;
 }
